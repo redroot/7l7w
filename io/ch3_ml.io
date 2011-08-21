@@ -1,24 +1,40 @@
 // attempt at creating a simple markup language using method missing
 
-Builder := Object clone
+Builder := Object clone do(
 
-// overrwide the method_missing, or forward, method to create what we need
-
-Builder forward := method(
-  // open the tag
-  writeln("<", call message name, ">")
+  depth := 0
   
-  // for all arguments, recurse
-  call message arguments foreach(arg,
+  setDepth := method(i, self depth = i)
+
+  prefix := method("  " repeated(depth))
+  
+  // overrwide the method_missing, or forward, method to create what we need
+  forward := method(
+  
+  
+    // open the tag  
+    writeln(prefix, "<", call message name,">")
+  
+    // increment parse depth by one
+    setDepth(depth + 1)
+  
+    // for all arguments, recurse
+    call message arguments foreach(arg,
     
-    content := self doMessage(arg)
+      content := self doMessage(arg)
+      
+      // if a string then print it out
+      if(content type == "Sequence", writeln(prefix, content))
     
-    // if a string then print it out
-    if(content type == "Sequence", writeln(content))
+    )
     
+    // now decrement again
+    
+    setDepth(depth - 1)
+  
+    writeln(prefix, "</", call message name, ">")
   )
   
-  writeln("</", call message name, ">")
 )
 
 // test
